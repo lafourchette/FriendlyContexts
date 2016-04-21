@@ -141,6 +141,18 @@ class CommandContext extends Context
     }
 
     /**
+     * @Then I should see :string in the command output
+     */
+    public function iShouldSeeInTheOutput($string)
+    {
+        $commandOutput = $this->getRawCommandOutput();
+
+        if (false === strpos($commandOutput, $string)) {
+            throw new \Exception(sprintf('Did not see "%s" in output "%s"', $string, $commandOutput));
+        }
+    }
+
+    /**
      * @return string
      *
      * @throws \Exception
