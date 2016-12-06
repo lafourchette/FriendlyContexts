@@ -29,7 +29,7 @@ class EntityHydrator
             }
 
             try {
-                PropertyAccess::getPropertyAccessor()
+                PropertyAccess::createPropertyAccessor()
                     ->setValue(
                         $entity,
                         $this->formater->toCamelCase($property),
@@ -41,7 +41,7 @@ class EntityHydrator
                     throw $e;
                 }
 
-                PropertyAccess::getPropertyAccessor()
+                PropertyAccess::createPropertyAccessor()
                     ->setValue(
                         $entity,
                         $this->formater->toCamelCase($property),
@@ -61,7 +61,7 @@ class EntityHydrator
 
     public function completeFields(ObjectManager $em, $entity)
     {
-        $accessor = PropertyAccess::getPropertyAccessor();
+        $accessor = PropertyAccess::createPropertyAccessor();
 
         $metadata = $this->resolver->getMetadataFromObject($em, $entity);
 
@@ -79,6 +79,33 @@ class EntityHydrator
                 } catch (\Exception $ex) {
                     unset($ex);
                 }
+            }
+        }
+
+        // Parse associations
+        foreach ($metadata->getAssociationNames() as $associationName) {
+            $mapping = $metadata->getAssociationMapping($associationName);
+            // Ignore if association is a collection (ManyToMany, OneToMany), nullable, or already has a value
+            if ($metadata->isCollectionValuedAssociation($associationName) ||
+                !isset($mapping['joinColumns'][0]['nullable']) ||
+                $mapping['joinColumns'][0]['nullable'] === true ||
+                $accessor->getValue($entity, $associationName) !== null
+            ) {
+                continue;
+            }
+            try {
+                // Create association object
+                $relatedClass = $metadata->getAssociationTargetClass($associationName);
+                $property = new $relatedClass;
+                // Complete required fields
+                $this->completeRequired($em, $property);
+                // Persist association object (prevent cascade persist forgetfulness)
+                $em->persist($property);
+
+                // Set entity association value
+                $accessor->setValue($entity, $associationName, $property);
+            } catch (\Exception $ex) {
+                unset($ex);
             }
         }
 
