@@ -35,9 +35,14 @@ services:
         tags:
             - { name: friendly.format.guesser }
 
+    friendly.guesser.smallstring:
+        class: Knp\FriendlyContexts\Guesser\SmallStringGuesser
+        tags:
+            - { name: friendly.format.guesser }
+
     friendly.guesser.entity:
         class: Knp\FriendlyContexts\Guesser\EntityGuesser
         arguments:
-            - @friendly.record.bag
+            - "@friendly.record.bag"
         tags:
             - { name: friendly.format.guesser }
