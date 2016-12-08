@@ -155,23 +155,9 @@ class EntityContext extends Context
     public function existLikeFollowing($nbr, $name, TableNode $table)
     {
         $entityName = $this->resolveEntity($name)->getName();
-
         $rows = $table->getRows();
-        $headers = array_shift($rows);
 
-        for ($i = 0; $i < $nbr; $i++) {
-            $row = $rows[$i % count($rows)];
-
-            $values = array_map(array($this, 'clean'), array_combine($headers, $row));
-            $object = $this->getEntityManager()
-                ->getRepository($entityName)
-                ->findOneBy($values);
-
-            if (is_null($object)) {
-                throw new \Exception(sprintf("There is no object for the following criteria: %s", json_encode($values)));
-            }
-            $this->getEntityManager()->refresh($object);
-        }
+        $this->get('friendly.entity.finder')->assertFindNumbersEntityEqualsToTable($this->getEntityManager(), $nbr, $entityName, $rows);
     }
 
     /**
