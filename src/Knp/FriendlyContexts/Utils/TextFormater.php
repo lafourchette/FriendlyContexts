@@ -11,22 +11,21 @@ class TextFormater
 
     public function toUnderscoreCase($str)
     {
-        $str = strtolower(preg_replace("[A-Z]", "_\$1", $str));
+        $str = strtolower(preg_replace('[A-Z]', '_$1', $str));
 
-        return preg_replace("/([^a-zA-Z])/", '_', $str);
+        return preg_replace('/([^a-zA-Z])/', '_', $str);
     }
 
     public function toSpaceCase($str)
     {
-        $str = strtolower(preg_replace("[A-Z]", "_\$1", $str));
+        $str = strtolower(preg_replace('[A-Z]', '_$1', $str));
 
-        return preg_replace("/([^a-zA-Z])/", ' ', $str);
+        return preg_replace('/([^a-zA-Z])/', ' ', $str);
     }
 
     public function tableToString(array $array)
     {
         if (1 === $this->getDimentions($array)) {
-
             return sprintf('|%s|', implode('|', array_map(function ($e) { return sprintf(' %s ', trim($e)); }, $array)));
         }
 
@@ -49,15 +48,15 @@ class TextFormater
             $lines[] = sprintf('|%s|', implode('|', $cells));
         }
 
-        return implode("\n", $lines). "\n";
+        return implode("\n", $lines)."\n";
     }
 
-    public function listToArray($list, $delimiters = [', ', ' and '], $parser = "#||#")
+    public function listToArray($list, $delimiters = [', ', ' and '], $parser = '#||#')
     {
-        $list  = str_replace('"', '', $list);
+        $list = str_replace('"', '', $list);
 
         foreach ($delimiters as $delimiter) {
-            $list  = str_replace($delimiter, $parser, $list);
+            $list = str_replace($delimiter, $parser, $list);
         }
 
         if (!is_string($list)) {
@@ -72,6 +71,16 @@ class TextFormater
         return $parts;
     }
 
+    /**
+     * @param string $input
+     *
+     * @return array
+     */
+    public function jsonToArray($input)
+    {
+        return json_decode($input, true);
+    }
+
     protected function getDimentions(array $array)
     {
         return $this->goDeeper($array, 0);
@@ -79,10 +88,10 @@ class TextFormater
 
     protected function goDeeper(array $array, $deep)
     {
-        $deep++;
+        ++$deep;
         foreach ($array as $elem) {
             if (is_array($elem)) {
-                $deep = max([ $this->goDeeper($elem, $deep), $deep ]);
+                $deep = max([$this->goDeeper($elem, $deep), $deep]);
             }
         }
 

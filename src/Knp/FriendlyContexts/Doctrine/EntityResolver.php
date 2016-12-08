@@ -75,7 +75,7 @@ class EntityResolver
             return $map;
         }
 
-        if ($this->asAccessForCase($entity, $property, self::CASE_CAMEL) || $this->asAccessForCase($entity, $property, self::CASE_UNDERSCORE)) {
+        if (is_object($entity) && $this->asAccessForCase($entity, $property, self::CASE_CAMEL) || $this->asAccessForCase($entity, $property, self::CASE_UNDERSCORE)) {
             return false;
         }
 
@@ -84,17 +84,16 @@ class EntityResolver
                 'Can\'t find property %s or %s in class %s',
                 $this->formater->toCamelCase(strtolower($property)),
                 $this->formater->toUnderscoreCase(strtolower($property)),
-                get_class($entity)
+                is_string($entity) ? $entity : get_class($entity)
             )
         );
     }
 
-    public function getMetadataFromObject(ObjectManager $entityManager, $object)
+    public function getMetadataFromObject(ObjectManager $entityManager, $entity)
     {
         return $entityManager
             ->getMetadataFactory()
-            ->getMetadataFor(get_class($object)
-        );
+            ->getMetadataFor(is_string($entity) ? $entity : get_class($entity));
     }
 
     public function entityNameProposal($name)

@@ -141,7 +141,7 @@ class EntityHydrator
     {
         $property = $mapping['fieldName'];
         $collectionRelation = in_array($mapping['type'], [ClassMetadata::ONE_TO_MANY, ClassMetadata::MANY_TO_MANY]);
-        $arrayRelation = in_array($mapping['type'], [DBALType::TARRAY, DBALType::SIMPLE_ARRAY, DBALType::JSON_ARRAY]);
+        $arrayRelation = in_array($mapping['type'], [DBALType::TARRAY, DBALType::SIMPLE_ARRAY]);
 
         if ($collectionRelation || $arrayRelation) {
             $result = array_map(
@@ -150,6 +150,15 @@ class EntityHydrator
                 },
                     $this->formater->listToArray($value)
                 );
+
+            $value = $collectionRelation ? new ArrayCollection($result) : $result;
+        } else if ($mapping['type'] === DBALType::JSON_ARRAY) {
+            $result = array_map(
+                function ($e) use ($mapping) {
+                    return $this->format($mapping, $e);
+                },
+                $this->formater->jsonToArray($value)
+            );
 
             $value = $collectionRelation ? new ArrayCollection($result) : $result;
         } else {
