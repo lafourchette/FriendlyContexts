@@ -68,6 +68,10 @@ class EntityFinder
             if (!in_array($metadata['type'], [DBALType::JSON_ARRAY])) {
                 $criterias[$property] = $this->clean($value);
             }
+
+            if (in_array($metadata['type'], [DBALType::DATETIME, DBALType::DATE, DBALType::DATETIMETZ])) {
+                $criterias[$property] = empty($criterias[$property]) ? null : new \DateTime($criterias[$property]);
+            }
         }
 
         return $criterias;
